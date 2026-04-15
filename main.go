@@ -38,6 +38,11 @@ func main() {
 	mux.HandleFunc("PATCH /series/{id}/episodio/incrementar", handlers.IncrementarEpisodio)
 	mux.HandleFunc("PATCH /series/{id}/episodio/decrementar", handlers.DecrementarEpisodio)
 
+	// Ratings
+	mux.HandleFunc("POST /series/{id}/ratings", handlers.CreateRating)
+	mux.HandleFunc("GET /series/{id}/ratings", handlers.GetRatings)
+	mux.HandleFunc("DELETE /ratings/{id}", handlers.DeleteRating)
+
 	log.Println("Server running on http://localhost:8080")
 
 	err := http.ListenAndServe(":8080", enableCORS(mux))
