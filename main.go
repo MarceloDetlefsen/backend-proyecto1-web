@@ -1,19 +1,18 @@
 package main
 
 import (
-	"encoding/json"
+	"backend-proyecto1-web/db"
+	"backend-proyecto1-web/handlers"
 	"log"
 	"net/http"
 )
 
-// Middleware CORS
 func enableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-		// Manejar preflight
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
 			return
@@ -23,27 +22,25 @@ func enableCORS(next http.Handler) http.Handler {
 	})
 }
 
-// Handler simple
-func pingHandler(w http.ResponseWriter, r *http.Request) {
-	response := map[string]string{
-		"message": "pong",
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
 func main() {
+	db.Init()
+
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/ping", pingHandler)
+	// Series CRUD
+	mux.HandleFunc("GET /series", handlers.GetAllSeries)
+	mux.HandleFunc("GET /series/{id}", handlers.GetSerieByID)
+	mux.HandleFunc("POST /series", handlers.CreateSerie)
+	mux.HandleFunc("PUT /series/{id}", handlers.UpdateSerie)
+	mux.HandleFunc("DELETE /series/{id}", handlers.DeleteSerie)
+
+	// Episodios
+	mux.HandleFunc("PATCH /series/{id}/episodio/incrementar", handlers.IncrementarEpisodio)
+	mux.HandleFunc("PATCH /series/{id}/episodio/decrementar", handlers.DecrementarEpisodio)
 
 	log.Println("Server running on http://localhost:8080")
 
-	// Aplicar CORS
-	handler := enableCORS(mux)
-
-	err := http.ListenAndServe(":8080", handler)
+	err := http.ListenAndServe(":8080", enableCORS(mux))
 	if err != nil {
 		log.Fatal(err)
 	}
