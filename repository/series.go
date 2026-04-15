@@ -3,12 +3,64 @@ package repository
 import (
 	"backend-proyecto1-web/db"
 	"backend-proyecto1-web/models"
+	"strconv"
 )
 
-func GetAllSeries() ([]models.Serie, error) {
-	rows, err := db.DB.Query(`SELECT id, titulo, episodio_actual, total_episodios, estado, calificacion, imagen FROM series`)
+func GetAllSeries(params map[string]string) ([]models.Serie, int, error) {
+	query := `SELECT id, titulo, episodio_actual, total_episodios, estado, calificacion, imagen FROM series WHERE 1=1`
+	countQuery := `SELECT COUNT(*) FROM series WHERE 1=1`
+	args := []any{}
+
+	// Búsqueda por nombre
+	if q, ok := params["q"]; ok && q != "" {
+		filter := " AND titulo LIKE ?"
+		query += filter
+		countQuery += filter
+		args = append(args, "%"+q+"%")
+	}
+
+	// Ordenamiento
+	validColumns := map[string]bool{
+		"id": true, "titulo": true, "episodio_actual": true,
+		"total_episodios": true, "estado": true, "calificacion": true,
+	}
+	sort := "id"
+	if s, ok := params["sort"]; ok && validColumns[s] {
+		sort = s
+	}
+	order := "asc"
+	if o, ok := params["order"]; ok && (o == "asc" || o == "desc") {
+		order = o
+	}
+	query += " ORDER BY " + sort + " " + order
+
+	// Total de registros para paginación
+	var total int
+	err := db.DB.QueryRow(countQuery, args...).Scan(&total)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	// Paginación
+	limit := 10
+	page := 1
+	if l, ok := params["limit"]; ok && l != "" {
+		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 {
+			limit = parsed
+		}
+	}
+	if p, ok := params["page"]; ok && p != "" {
+		if parsed, err := strconv.Atoi(p); err == nil && parsed > 0 {
+			page = parsed
+		}
+	}
+	offset := (page - 1) * limit
+	query += " LIMIT ? OFFSET ?"
+	args = append(args, limit, offset)
+
+	rows, err := db.DB.Query(query, args...)
+	if err != nil {
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -17,12 +69,12 @@ func GetAllSeries() ([]models.Serie, error) {
 		var s models.Serie
 		err := rows.Scan(&s.ID, &s.Titulo, &s.EpisodioActual, &s.TotalEpisodios, &s.Estado, &s.Calificacion, &s.Imagen)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		series = append(series, s)
 	}
 
-	return series, nil
+	return series, total, nil
 }
 
 func GetSerieByID(id int) (*models.Serie, error) {

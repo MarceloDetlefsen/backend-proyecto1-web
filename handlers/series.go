@@ -27,7 +27,15 @@ func parseID(r *http.Request) (int, error) {
 
 // GET /series
 func GetAllSeries(w http.ResponseWriter, r *http.Request) {
-	series, err := repository.GetAllSeries()
+	params := map[string]string{
+		"q":     r.URL.Query().Get("q"),
+		"sort":  r.URL.Query().Get("sort"),
+		"order": r.URL.Query().Get("order"),
+		"page":  r.URL.Query().Get("page"),
+		"limit": r.URL.Query().Get("limit"),
+	}
+
+	series, total, err := repository.GetAllSeries(params)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "Error obteniendo series")
 		return
@@ -37,7 +45,10 @@ func GetAllSeries(w http.ResponseWriter, r *http.Request) {
 		series = []models.Serie{}
 	}
 
-	writeJSON(w, http.StatusOK, series)
+	writeJSON(w, http.StatusOK, map[string]any{
+		"data":  series,
+		"total": total,
+	})
 }
 
 // GET /series/{id}
