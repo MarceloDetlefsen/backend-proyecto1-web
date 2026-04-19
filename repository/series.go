@@ -25,8 +25,12 @@ func GetAllSeries(params map[string]string) ([]models.Serie, int, error) {
 		"total_episodios": true, "estado": true, "calificacion": true,
 	}
 	sort := "id"
-	if s, ok := params["sort"]; ok && validColumns[s] {
-		sort = s
+	if s, ok := params["sort"]; ok {
+		if s == "progreso" {
+			sort = "CAST(episodio_actual AS REAL) / NULLIF(total_episodios, 0)"
+		} else if validColumns[s] {
+			sort = s
+		}
 	}
 	order := "asc"
 	if o, ok := params["order"]; ok && (o == "asc" || o == "desc") {
