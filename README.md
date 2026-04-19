@@ -1,4 +1,4 @@
-# Series Tracker API 🎬
+# Series Tracker - Backend 🎬
 
 Backend REST API hecho en Go desde cero (sin frameworks) con SQLite como base de datos.
 

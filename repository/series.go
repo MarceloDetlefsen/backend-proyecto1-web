@@ -83,8 +83,8 @@ func GetAllSeries(params map[string]string) ([]models.Serie, int, error) {
 
 func GetSerieByID(id int) (*models.Serie, error) {
 	var s models.Serie
-	err := db.DB.QueryRow(`SELECT id, titulo, episodio_actual, total_episodios, estado, calificacion, imagen FROM series WHERE id = ?`, id).
-		Scan(&s.ID, &s.Titulo, &s.EpisodioActual, &s.TotalEpisodios, &s.Estado, &s.Calificacion, &s.Imagen)
+	err := db.DB.QueryRow(`SELECT id, titulo, episodio_actual, total_episodios, estado, calificacion, imagen, descripcion FROM series WHERE id = ?`, id).
+		Scan(&s.ID, &s.Titulo, &s.EpisodioActual, &s.TotalEpisodios, &s.Estado, &s.Calificacion, &s.Imagen, &s.Descripcion)
 	if err != nil {
 		return nil, err
 	}
@@ -93,8 +93,8 @@ func GetSerieByID(id int) (*models.Serie, error) {
 
 func CreateSerie(s models.Serie) (*models.Serie, error) {
 	result, err := db.DB.Exec(
-		`INSERT INTO series (titulo, episodio_actual, total_episodios, estado, calificacion, imagen) VALUES (?, ?, ?, ?, ?, ?)`,
-		s.Titulo, s.EpisodioActual, s.TotalEpisodios, s.Estado, s.Calificacion, s.Imagen,
+		`INSERT INTO series (titulo, episodio_actual, total_episodios, estado, calificacion, imagen, descripcion) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		s.Titulo, s.EpisodioActual, s.TotalEpisodios, s.Estado, s.Calificacion, s.Imagen, s.Descripcion,
 	)
 	if err != nil {
 		return nil, err
@@ -110,8 +110,8 @@ func CreateSerie(s models.Serie) (*models.Serie, error) {
 
 func UpdateSerie(id int, s models.Serie) (*models.Serie, error) {
 	_, err := db.DB.Exec(
-		`UPDATE series SET titulo = ?, episodio_actual = ?, total_episodios = ?, estado = ?, calificacion = ?, imagen = ? WHERE id = ?`,
-		s.Titulo, s.EpisodioActual, s.TotalEpisodios, s.Estado, s.Calificacion, s.Imagen, id,
+		`UPDATE series SET titulo = ?, episodio_actual = ?, total_episodios = ?, estado = ?, calificacion = ?, imagen = ?, descripcion = ? WHERE id = ?`,
+		s.Titulo, s.EpisodioActual, s.TotalEpisodios, s.Estado, s.Calificacion, s.Imagen, s.Descripcion, id,
 	)
 	if err != nil {
 		return nil, err

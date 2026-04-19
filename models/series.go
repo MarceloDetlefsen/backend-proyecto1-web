@@ -8,4 +8,5 @@ type Serie struct {
 	Estado         string   `json:"estado"`
 	Calificacion   *float64 `json:"calificacion"`
 	Imagen         *string  `json:"imagen"`
+	Descripcion    *string  `json:"descripcion"`
 }

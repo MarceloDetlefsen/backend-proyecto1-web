@@ -34,7 +34,8 @@ func createTable() {
 		total_episodios  INTEGER NOT NULL DEFAULT 0,
 		estado           TEXT NOT NULL DEFAULT 'pendiente',
 		calificacion     REAL DEFAULT NULL,
-		imagen           TEXT DEFAULT NULL
+		imagen           TEXT DEFAULT NULL,
+		descripcion     TEXT DEFAULT NULL
 	);`
 
 	ratingsQuery := `
