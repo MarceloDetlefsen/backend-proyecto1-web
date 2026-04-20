@@ -1,8 +1,17 @@
-# Series Tracker - Backend 🎬
+# Series Tracker — Backend 🎬
 
 Backend REST API hecho en Go desde cero (sin frameworks) con SQLite como base de datos.
 
-## Cómo correr el proyecto
+## Screenshot
+
+### Servidor corriendo
+![Servidor corriendo](images/Preview.png)
+
+## 🔗 Links
+- [Aplicación en producción](https://frontend-proyecto1-web.vercel.app/)
+- [Repositorio Frontend](https://github.com/MarceloDetlefsen/frontend-proyecto1-web)
+
+## Cómo correr el proyecto localmente
 
 ### Requisitos
 - Go 1.22+
@@ -14,7 +23,7 @@ cd backend-proyecto1-web
 go run main.go
 ```
 
-El servidor corre en `http://localhost:8080`
+El servidor corre en `http://localhost:8080`. La base de datos `series.db` se crea automáticamente al iniciar.
 
 ### Estructura del proyecto
 ```
@@ -24,7 +33,7 @@ El servidor corre en `http://localhost:8080`
 │   └── db.go            # Conexión a SQLite y creación de tablas
 ├── models/
 │   ├── series.go        # Struct Serie
-│   └── rating.go        # Structs Rating y RatingSummary
+│   └── ratings.go       # Structs Rating y RatingSummary
 ├── repository/
 │   ├── series.go        # Queries de series a la DB
 │   └── ratings.go       # Queries de ratings a la DB
@@ -38,31 +47,31 @@ El servidor corre en `http://localhost:8080`
 ## Endpoints
 
 ### Series
-| Método | Ruta                              | Descripción                        |
-|--------|-----------------------------------|------------------------------------|
-| GET    | `/series`                         | Listar todas las series            |
-| GET    | `/series/{id}`                    | Obtener una serie por ID           |
-| POST   | `/series`                         | Crear una serie nueva              |
-| PUT    | `/series/{id}`                    | Editar una serie existente         |
-| DELETE | `/series/{id}`                    | Eliminar una serie                 |
-| PATCH  | `/series/{id}/episodio/incrementar` | Sumar +1 al episodio actual      |
-| PATCH  | `/series/{id}/episodio/decrementar` | Restar -1 al episodio actual     |
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/series` | Listar todas las series |
+| GET | `/series/{id}` | Obtener una serie por ID |
+| POST | `/series` | Crear una serie nueva |
+| PUT | `/series/{id}` | Editar una serie existente |
+| DELETE | `/series/{id}` | Eliminar una serie |
+| PATCH | `/series/{id}/episodio/incrementar` | Sumar +1 al episodio actual |
+| PATCH | `/series/{id}/episodio/decrementar` | Restar -1 al episodio actual |
 
 ### Ratings
-| Método | Ruta                    | Descripción                                      |
-|--------|-------------------------|--------------------------------------------------|
-| POST   | `/series/{id}/ratings`  | Agregar un rating a una serie (puntuación 1–10)  |
-| GET    | `/series/{id}/ratings`  | Obtener ratings y promedio de una serie          |
-| DELETE | `/ratings/{id}`         | Eliminar un rating por ID                        |
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | `/series/{id}/ratings` | Agregar un rating (puntuación 1–10) |
+| GET | `/series/{id}/ratings` | Obtener ratings y promedio de una serie |
+| DELETE | `/ratings/{id}` | Eliminar un rating por ID |
 
 ### Query params disponibles en GET /series
-| Parámetro | Ejemplo              | Descripción                              |
-|-----------|----------------------|------------------------------------------|
-| `q`       | `?q=breaking`        | Buscar series por nombre                 |
-| `sort`    | `?sort=calificacion` | Ordenar por columna                      |
-| `order`   | `?order=desc`        | Dirección del orden (`asc` o `desc`)     |
-| `page`    | `?page=2`            | Página actual (default: 1)               |
-| `limit`   | `?limit=5`           | Resultados por página (default: 10)      |
+| Parámetro | Ejemplo | Descripción |
+|-----------|---------|-------------|
+| `q` | `?q=breaking` | Buscar por nombre |
+| `sort` | `?sort=calificacion` | Ordenar por columna |
+| `order` | `?order=desc` | Dirección del orden (`asc` o `desc`) |
+| `page` | `?page=2` | Página actual (default: 1) |
+| `limit` | `?limit=5` | Resultados por página (default: 10) |
 
 ## Challenges implementados
 
@@ -77,19 +86,31 @@ El servidor corre en `http://localhost:8080`
 
 **Total: 130 puntos**
 
+## Sobre CORS
+
+CORS (Cross-Origin Resource Sharing) es una política de seguridad del navegador que bloquea peticiones HTTP entre orígenes distintos (diferente dominio o puerto). Se configuró un middleware que permite todos los orígenes con los métodos GET, POST, PUT, DELETE, PATCH y OPTIONS.
+
+```
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS
+Access-Control-Allow-Headers: Content-Type
+```
 
 ## Detalles técnicos
 
-- El servidor usa únicamente **`net/http`** de la librería estándar de Go, sin frameworks externos
-- La base de datos es **SQLite** usando `modernc.org/sqlite`, un driver pure Go que no requiere CGo ni GCC
-- La tabla `ratings` tiene una **foreign key** hacia `series` con `ON DELETE CASCADE`, lo que elimina automáticamente los ratings al borrar una serie
-- El campo `imagen` en series almacena una **URL o path** a la imagen, no el binario
-- La función `GetAllSeries` construye la query dinámicamente con **protección contra SQL injection** usando `?` como placeholders
-- Los endpoints de incrementar/decrementar episodios usan `MIN` y `MAX` directamente en SQL para evitar que el episodio se salga del rango válido sin validación extra en Go
+- El servidor usa únicamente `net/http` de la librería estándar de Go, sin frameworks externos
+- La base de datos es SQLite usando `modernc.org/sqlite`, un driver pure Go que no requiere CGo ni GCC
+- La tabla `ratings` tiene una foreign key hacia `series` con `ON DELETE CASCADE`, eliminando automáticamente los ratings al borrar una serie
+- La función `GetAllSeries` construye la query dinámicamente con protección contra SQL injection usando `?` como placeholders
+- Los endpoints de incrementar/decrementar usan `MIN` y `MAX` directamente en SQL para mantener el episodio dentro del rango válido
 
+## Reflexión
+
+Go resultó una excelente elección para este proyecto. La librería estándar cubre todo lo necesario para un servidor HTTP sin frameworks, lo que obliga a entender realmente cómo funciona el protocolo. El tipado estático y la compilación rápida hacen que los errores aparezcan antes de correr el código, no en runtime.
+
+`modernc.org/sqlite` fue una sorpresa positiva — al ser pure Go elimina la fricción de configurar CGo o GCC, algo que en proyectos anteriores causaba problemas en Windows. Lo usaría de nuevo sin dudarlo.
+
+El punto más interesante fue diseñar los contratos de la API antes de escribir el cliente. Tener endpoints claros con códigos HTTP correctos hace que el frontend sea mucho más predecible de escribir — sabés exactamente qué esperar en cada caso.
 
 ## 👨‍💻 Autor
 Marcelo Detlefsen - 24554
-
-## 🔗 Links
-- [Repositorio Frontend](https://github.com/MarceloDetlefsen/frontend-proyecto1-web)
